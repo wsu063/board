@@ -51,7 +51,7 @@ public class BoardRepositoryCustomImpl implements BoardRepositoryCustom{
     private BooleanExpression searchByLike(String searchBy, String searchQuery) {
         if(StringUtils.equals("title", searchBy)) { // 글제목 검색
             return QBoard.board.title.like("%" + searchQuery + "%");
-        } else if (StringUtils.equals("createdBy", searchQuery)) { // 작성자 검색시
+        } else if (StringUtils.equals("createdBy", searchBy)) { // 작성자 검색시
             return QBoard.board.createdBy.like("%" + searchQuery + "%");
         }
         return null;
@@ -63,7 +63,6 @@ public class BoardRepositoryCustomImpl implements BoardRepositoryCustom{
 
     @Override
     public Page<Board> getBoardPage(BoardSearchDto boardSearchDto, Pageable pageable) {
-
         List<Board> content = queryFactory
                 .selectFrom(QBoard.board)
                 .where(regDtsAfter(boardSearchDto.getSearchDateType()),

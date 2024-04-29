@@ -2,6 +2,10 @@
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layouts/layout1}">
+<head>
+    <meta name="_csrf" th:content="${_csrf.token}" />
+    <meta name="_csrf_header" th:content="${_csrf.headerName}" />
+</head>
 <div layout:fragment="content">
     <div class="bg-light py-3">
         <div class="container">
@@ -49,12 +53,12 @@
                             </div>
                             <div
                                     class="tags-share-box center-box d-flex text-center justify-content-between border-top border-bottom py-3">
-                                <span class="single-comment-o"><i class="fa fa-comment-o"></i></span>
-
                                 <!-- 세션으로 아이디 넘겨줘서 수정하기 가능하게?필요없나?-->
-                                <div class="list-posts-share">
-                                    <a style="cursor:pointer;" th:href="'/posts/rewrite/' + ${board.id}">수정</a>
-                                    <a style="cursor:pointer;">삭제</a>
+                                <div class="list-posts-share" th:if="${#strings.equals(board.createdBy, memberId)}">
+                                    <a style="cursor:pointer;"
+                                       th:href="'/posts/rewrite/' + ${board.id}">수정</a>
+                                    <a style="cursor:pointer;"
+                                       th:onclick="'deleteBoard(' + ${board.id} + ')'">삭제</a>
                                 </div>
                             </div>
                         </div>
@@ -72,6 +76,38 @@
 </div>
 <th:block layout:fragment="script">
     <script th:inline="javascript">
+        function deleteBoard(boardId) {
+            const cancelConf = confirm("게시글 삭제하시겠습니까?");
+            if(!cancelConf) return; // 취소 선택시 끝
+
+            var token = $("meta[name='_csrf']").attr("content");
+            var header = $("meta[name='_csrf_header']").attr("content");
+
+            $.ajax({
+                url : "/posts/" + boardId + "/delete",
+                type : "DELETE",
+                contentType : "application/json",
+                beforeSend : function(xhr) {
+                    //데이터를 전송하기 전에 헤더에 csrf 값을 설정
+                    xhr.setRequestHeader(header, token);
+                },
+                dataType : "json",
+                cache : false,
+                success : function(result, status) {
+                    //주문 취소 후에 목록으로 이동
+                    location.href = '/posts/list';
+
+                },
+                error : function(jqXHR, status, error) {
+                    if(jqXHR.status == '401') {
+                     alert('로그인 후 이용해주세요.');
+                     location.href = '/members/login';
+                    } else {
+                      alert(jqXHR.responseText);
+                    }
+                }
+            });
+        }
     </script>
 </th:block>
 </html>

@@ -8,6 +8,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "board")
@@ -19,14 +20,15 @@ public class Board extends BaseEntity { // 제목, 내용, 타입(공지 혹은 
     @Column(name = "board_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     private String title;
-
     @Lob
     private String content;
 
     @Enumerated(EnumType.STRING)
     private BoardTypeStatus boardTypeStatus;
+
+    @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<BoardImg> boardImages;
 
     //board엔티티 수정
     public void updateBoard(BoardFormDto boardFormDto) {
@@ -35,3 +37,5 @@ public class Board extends BaseEntity { // 제목, 내용, 타입(공지 혹은 
         this.boardTypeStatus = boardFormDto.getBoardTypeStatus();
     }
 }
+
+

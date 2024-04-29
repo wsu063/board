@@ -5,8 +5,10 @@ import com.board.dto.BoardImgDto;
 import com.board.dto.BoardSearchDto;
 import com.board.entity.Board;
 import com.board.entity.BoardImg;
+import com.board.entity.Member;
 import com.board.repository.BoardImgRepository;
 import com.board.repository.BoardRepository;
+import com.board.repository.MemberRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -14,6 +16,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import org.thymeleaf.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,6 +28,7 @@ public class BoardService {
     private final BoardRepository boardRepository;
     private final BoardImgRepository boardImgRepository;
     private final BoardImgService boardImgService;
+    private final MemberRepository memberRepository;
 
     //insert
     public Long saveBoard(BoardFormDto boardFormDto,
@@ -94,10 +98,38 @@ public class BoardService {
         return board.getId();
     }
 
+    //글 목록 가져오기
     @Transactional(readOnly = true)
     public Page<Board> getBoardPage(BoardSearchDto boardSearchDto, Pageable pageable) {
         Page<Board> boardPage = boardRepository.getBoardPage(boardSearchDto, pageable);
         return boardPage;
+    }
+
+    //글 삭제하기
+    public void deleteBoard(Long boardId) {
+        Board board = boardRepository.findById(boardId)
+                .orElseThrow(EntityNotFoundException::new);
+
+        boardRepository.delete(board);
+    }
+
+    //본인 확인
+    @Transactional(readOnly = true)
+    public boolean validateUser(Long boardId, String email) {
+        //현재 로그인한 사용자
+        Member curMember = memberRepository.findByEmail(email);
+
+        //게시글 찾기
+        Board board = boardRepository.findById(boardId)
+                .orElseThrow(EntityNotFoundException::new);
+
+        //게시글 작성자 찾기
+        String boardMemberNm = board.getCreatedBy();
+
+        if (!StringUtils.equals(curMember.getEmail(), boardMemberNm)) {
+            return false;
+        }
+        return true;
     }
 
 

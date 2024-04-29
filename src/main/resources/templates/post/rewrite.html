@@ -20,11 +20,11 @@
                     <div class="row justify-content-center">
                         <div class="col-lg-8">
                             <h2 class="mb-4">게시글 수정</h2>
-                            <form id="boardForm" name="boardForm" class="contact-form" method="post"
-                                  action="/posts/write" th:object="${boardFormDto}" enctype="multipart/form-data">
+                            <form id="boardForm" name="boardForm" class="contact-form" method="post" enctype="multipart/form-data"
+                                  th:action="@{'/posts/rewrite/' + ${boardFormDto.id}}" th:object="${boardFormDto}">
+                                <input type="hidden" th:field="*{id}" />
                                 <div class="row">
                                     <div class="col-md-12">
-
                                         <div class="form-group row">
                                             <div class="col-md-12">
                                                 <select class="form-select" th:field="*{boardTypeStatus}" >
@@ -52,9 +52,15 @@
                                                 <p th:if="${#fields.hasErrors('content')}" th:errors="*{content}" class="fieldError">Incorrect Data</p>
                                             </div>
                                         </div>
-                                        <div class="form-group row" th:each="num: ${#numbers.sequence(1,5)}">
+                                        <div class="form-group row"
+                                             th:if="${not #lists.isEmpty(boardFormDto.boardImgDtoList)}"
+                                             th:each="boardImgDto, status: ${boardFormDto.boardImgDtoList}">
                                             <div class="col-md-12">
-                                                <label for="boardImgFile" class="form-label"></label>
+                                                <label for="boardImgFile" class="form-label"
+                                                       th:text="${not #strings.isEmpty(boardImgDto.oriImgName)}
+                                    ? ${boardImgDto.oriImgName} : '이미지' + ${status.index+1}">
+                                                </label>
+                                                <input type="hidden" name="boardImgIds" th:value="${boardImgDto.id}"/>
                                                 <input class="form-control" type="file"
                                                        id="boardImgFile" name="boardImgFile" />
                                             </div>
